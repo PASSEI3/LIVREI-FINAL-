@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-purple-950 text-purple-50 antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    overscroll-behavior-y: none;
+  }
+}
+
+@layer utilities {
+  .field-input {
+    @apply w-full rounded-xl bg-purple-900/80 px-3.5 py-3 text-sm font-medium text-purple-50 placeholder:text-purple-500 outline-none ring-1 ring-purple-700 transition focus:ring-2 focus:ring-mint-400;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .glass {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
+
+/* Book cover gradients */
+.cover-1 { background: linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%); }
+.cover-2 { background: linear-gradient(135deg, #10B981 0%, #047857 100%); }
+.cover-3 { background: linear-gradient(135deg, #F59E0B 0%, #B45309 100%); }
+.cover-4 { background: linear-gradient(135deg, #EC4899 0%, #9D174D 100%); }
+.cover-5 { background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%); }
+.cover-6 { background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); }
+.cover-7 { background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%); }
+.cover-8 { background: linear-gradient(135deg, #F43F5E 0%, #BE123C 100%); }
