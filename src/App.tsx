@@ -183,7 +183,12 @@ function App() {
       if (meetup) setMeetups((prev) => ({ ...prev, [id]: meetup }));
       setMatches((m) => m.map((x) => (x.id === id ? { ...x, feePaidByMe: true } : x)));
       setPayMatch(null);
-      setShipping({ match: { ...payMatch, status: 'conversando' }, method, meetup });
+      if (method === 'courier') {
+        setMatches((m) => m.map((x) => (x.id === id ? { ...x, status: 'conversando' } : x)));
+        setChatMatch({ ...payMatch, status: 'conversando' });
+      } else {
+        setShipping({ match: { ...payMatch, status: 'conversando' }, method, meetup });
+      }
     }
   };
 
