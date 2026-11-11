@@ -45,6 +45,8 @@ const statusBadge: Record<MatchEntry['status'], { label: string; cls: string; do
   finalizado: { label: 'Finalizado', cls: 'bg-neutral-700 text-neutral-300', dot: 'bg-neutral-500' },
 };
 
+const ongoingBadge = { label: 'Em andamento', cls: 'bg-mint-400/20 text-mint-300 ring-1 ring-mint-400/40' };
+
 const sectionTabs: { id: Section; label: string; icon: typeof Eye }[] = [
   { id: 'likers', label: 'De olho na sua estante', icon: Eye },
   { id: 'ongoing', label: 'Em andamento', icon: Loader2 },
@@ -270,6 +272,8 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
               {ongoingMatches.map((m, i) => {
                 const meetup = meetups[m.id];
                 const isNew = m.status === 'novo';
+                const isTrackingActive = Boolean(m.deliveryMethod === 'correios' && m.trackingCode);
+                const chatUnlocked = isChatUnlocked(m);
                 return (
                   <div
                     key={m.id}
@@ -288,8 +292,8 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
                       </span>
                       <div className="ml-auto flex items-center gap-1.5">
                         {isNew && <span className="h-2 w-2 animate-pulse rounded-full bg-mint-400" />}
-                        <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${statusBadge[m.status].cls}`}>
-                          {statusBadge[m.status].label}
+                        <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${isTrackingActive ? ongoingBadge.cls : statusBadge[m.status].cls}`}>
+                          {isTrackingActive ? ongoingBadge.label : statusBadge[m.status].label}
                         </span>
                       </div>
                     </div>
@@ -336,21 +340,27 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
                         <div className="ml-auto flex items-center gap-2">
                           <button
                             onClick={() => onChat(m)}
-                            disabled={!isChatUnlocked(m)}
-                            className={`flex h-9 w-9 items-center justify-center rounded-full transition active:scale-90 disabled:cursor-not-allowed disabled:active:scale-100 ${isChatUnlocked(m) ? 'bg-mint-400 text-purple-950' : 'bg-purple-900 text-purple-600'}`}
+                            disabled={!chatUnlocked}
+                            className={`flex h-9 w-9 items-center justify-center rounded-full transition active:scale-90 disabled:cursor-not-allowed disabled:active:scale-100 ${chatUnlocked ? 'bg-mint-400 text-purple-950' : 'bg-purple-900 text-purple-600'}`}
                             aria-label="Conversar"
                           >
                             <MessageCircle className="h-4 w-4" />
                           </button>
-                          {!isChatUnlocked(m) && (
+                          {!chatUnlocked && !isTrackingActive && (
                             <span className="flex max-w-[9rem] flex-col items-end gap-1"><span className="text-right text-[10px] leading-tight text-purple-400">Chat liberado após a confirmação do pagamento</span><button type="button" onClick={() => onSimulatePartnerPayment(m)} className="text-[10px] font-semibold text-mint-400 underline underline-offset-2">Simular pagamento do outro</button></span>
                           )}
-                          <button
-                            onClick={() => onPay(m)}
-                            className="rounded-full bg-mint-400 px-4 py-2 text-xs font-bold text-purple-950 shadow-lg shadow-mint-400/20 transition active:scale-95"
-                          >
-                            Confirmar Troca (R$ 2,00)
-                          </button>
+                          {isTrackingActive ? (
+                            <span className="flex shrink-0 items-center gap-1 rounded-full bg-mint-400/15 px-3 py-2 text-xs font-bold text-mint-300 ring-1 ring-mint-400/30">
+                              <CheckCircle2 className="h-3.5 w-3.5" /> Troca Paga
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => onPay(m)}
+                              className="rounded-full bg-mint-400 px-4 py-2 text-xs font-bold text-purple-950 shadow-lg shadow-mint-400/20 transition active:scale-95"
+                            >
+                              Confirmar Troca (R$ 2,00)
+                            </button>
+                          )}
                         </div>
                       </div>
 
