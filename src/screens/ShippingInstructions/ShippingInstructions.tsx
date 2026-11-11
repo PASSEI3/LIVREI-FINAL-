@@ -58,13 +58,13 @@ const correiosSteps: Step[] = [
   },
   {
     icon: Tag,
-    title: 'Cole a etiqueta pré-paga',
-    text: 'A etiqueta rastreada já foi paga no checkout. Imprima ou cole a etiqueta fornecida no centro da embalagem, sem cobrir códigos.',
+    title: 'Identificação simples (Sem impressora)',
+    text: 'Você não precisa imprimir nada em casa. Escreva à caneta do lado de fora do pacote apenas o Nome Completo e o Endereço/CEP do destinatário.',
   },
   {
     icon: Building2,
     title: 'Poste na agência',
-    text: 'Leve o pacote a qualquer agência dos Correios e faça a postagem. O custo na agência é zero — tudo já está pago.',
+    text: 'Leve o pacote a qualquer agência dos Correios e mostre o Código Digital de Postagem na tela do seu celular. O atendente imprime a etiqueta gratuitamente na hora.',
   },
   {
     icon: Clock,
