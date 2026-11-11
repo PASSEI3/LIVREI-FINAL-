@@ -19,6 +19,9 @@ import {
   PackageCheck,
   Send,
   Coins,
+  Zap,
+  Shield,
+  AlertCircle,
 } from 'lucide-react';
 import type { MatchEntry, MeetupPoint, Book } from '@/types';
 import type { ShelfLiker } from '@/data';
@@ -58,12 +61,20 @@ const sectionTabs: { id: Section; label: string; icon: typeof Eye }[] = [
 const NOW = new Date('2026-10-27T12:00:00');
 const EXPIRY_MS = 3 * 24 * 60 * 60 * 1000;
 
-const SEND_EXAMPLE: { book: Book; recipientName: string; recipientCity: string; recipientEmoji: string; postalCode: string } = {
+const SEND_EXAMPLE: { book: Book; recipientName: string; recipientCity: string; recipientAddress: string; recipientEmoji: string; postalCode: string } = {
   book: { id: 'send-1', title: 'A Biblioteca da Meia-Noite', author: 'Matt Haig', coverClass: 'cover-1', coverEmoji: '🌙', condition: 'Seminovo', category: 'Ficção', notes: 'Pouco uso, sem rasuras.', isbn: '9788542221244' },
   recipientName: 'Beatriz M.',
   recipientCity: 'São Paulo - SP',
+  recipientAddress: 'Rua Exemplo, 123 - Centro, São Paulo - SP',
   recipientEmoji: '🦊',
   postalCode: '98472615',
+};
+
+const UBER_EXAMPLE: { book: Book; recipientName: string; recipientCity: string; recipientEmoji: string } = {
+  book: { id: 'send-2', title: 'O Homem que Confundiu a Mulher com um Chapéu', author: 'Oliver Sacks', coverClass: 'cover-2', coverEmoji: '🧠', condition: 'Bom Estado', category: 'Não-ficção', notes: 'Páginas levemente amareladas.', isbn: '9788535914892' },
+  recipientName: 'Lucas P.',
+  recipientCity: 'Rio de Janeiro - RJ',
+  recipientEmoji: '🐯',
 };
 
 function timeRemaining(likedAt: string): { label: string; hoursLeft: number; urgent: boolean } {
@@ -89,6 +100,8 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
   const [section, setSection] = useState<Section>(initialSection);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [uberStatus, setUberStatus] = useState<'pending' | 'confirmed' | 'away'>('pending');
+  const [uberConfirming, setUberConfirming] = useState(false);
 
   useEffect(() => {
     setSection(initialSection);
@@ -315,6 +328,15 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
                   </div>
                 </div>
 
+                {/* Address to write on package */}
+                <div className="mt-3 flex items-start gap-2 rounded-xl bg-purple-950/50 px-3 py-2">
+                  <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-amber-400" />
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-purple-400">Endereço para escrever no pacote</p>
+                    <p className="mt-0.5 text-[11px] leading-snug text-purple-200">{SEND_EXAMPLE.recipientAddress}</p>
+                  </div>
+                </div>
+
                 {/* Postal code block */}
                 <div className="mt-4 rounded-2xl bg-purple-950/60 p-3 ring-1 ring-purple-800">
                   <div className="flex items-center gap-2">
@@ -356,6 +378,139 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Para Enviar (Uber Flash - Local) — sender view */}
+            <div
+              className="overflow-hidden rounded-3xl bg-purple-900/60 ring-1 ring-mint-400/40 shadow-lg shadow-mint-400/5 transition-all duration-300 animate-fade-in"
+              style={{ animationDelay: '60ms' }}
+            >
+              {/* Header bar */}
+              <div className="flex items-center gap-2 border-b border-purple-800 px-4 py-2.5">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-mint-400/15">
+                  <Zap className="h-3.5 w-3.5 text-mint-400" />
+                </div>
+                <span className="text-sm font-semibold text-purple-50">Para Enviar (Uber Flash - Local)</span>
+                <div className="ml-auto flex items-center gap-1.5">
+                  <span className="flex items-center gap-1 rounded-full bg-mint-400/20 px-2.5 py-0.5 text-[10px] font-bold text-mint-300 ring-1 ring-mint-400/40">
+                    <Coins className="h-3 w-3" /> Resgate por moedas
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4">
+                {/* Requested book + recipient */}
+                <div className="flex items-center gap-3">
+                  <div className="text-center">
+                    <BookCover book={UBER_EXAMPLE.book} className="h-28 w-20" emojiSize="text-3xl" />
+                    <p className="mt-1.5 text-[10px] font-semibold text-mint-400">Enviar para</p>
+                  </div>
+                  <div className="flex flex-1 flex-col items-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-800">
+                      <Send className="h-5 w-5 text-purple-300" />
+                    </div>
+                  </div>
+                  <div className="flex flex-1 flex-col items-center gap-2">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-700 text-2xl">
+                      {UBER_EXAMPLE.recipientEmoji}
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[11px] font-bold text-purple-50">{UBER_EXAMPLE.recipientName}</p>
+                      <p className="flex items-center justify-center gap-1 text-[9px] text-purple-400">
+                        <MapPin className="h-2.5 w-2.5" /> {UBER_EXAMPLE.recipientCity}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Privacy reminder */}
+                <div className="mt-3 flex items-start gap-2 rounded-xl bg-purple-950/50 px-3 py-2">
+                  <Shield className="mt-0.5 h-3 w-3 shrink-0 text-mint-400" />
+                  <p className="text-[11px] leading-relaxed text-purple-300">
+                    Escreva na sacola apenas o Nome Completo do destinatário (não anote telefone ou PIN).
+                  </p>
+                </div>
+
+                {/* Status-specific content */}
+                {uberStatus === 'pending' && (
+                  <div className="mt-4 space-y-3">
+                    {/* Alert */}
+                    <div className="flex items-start gap-2 rounded-2xl bg-amber-400/10 px-3 py-3 ring-1 ring-amber-400/30">
+                      <span className="text-base leading-none">⏳</span>
+                      <p className="text-[12px] leading-relaxed text-amber-200">
+                        Alguém quer seu livro via Uber. Você está disponível para embalar e enviar agora?
+                      </p>
+                    </div>
+                    {/* Action buttons */}
+                    <button
+                      onClick={() => setUberConfirming(true)}
+                      className="flex w-full items-center justify-center gap-2 rounded-full bg-mint-400 py-3.5 text-sm font-bold text-purple-950 shadow-lg shadow-mint-400/20 transition active:scale-95"
+                    >
+                      <Check className="h-4 w-4" /> Sim, estou pronto agora
+                    </button>
+                    <button
+                      onClick={() => setUberStatus('away')}
+                      className="flex w-full items-center justify-center gap-2 rounded-full bg-purple-800 py-3 text-xs font-semibold text-purple-300 ring-1 ring-purple-700 transition active:scale-95"
+                    >
+                      🕒 Não estou em casa agora
+                    </button>
+                  </div>
+                )}
+
+                {/* Confirm dialog overlay */}
+                {uberConfirming && (
+                  <div className="mt-4 rounded-2xl bg-mint-400/10 p-4 ring-1 ring-mint-400/40">
+                    <p className="text-center text-[13px] font-semibold text-mint-200">
+                      O motoboy será chamado nos próximos minutos. Confirmar envio agora?
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        onClick={() => setUberConfirming(false)}
+                        className="flex-1 rounded-full bg-purple-800 py-2.5 text-xs font-bold text-purple-300 active:scale-95"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          setUberConfirming(false);
+                          setUberStatus('confirmed');
+                        }}
+                        className="flex-1 rounded-full bg-mint-400 py-2.5 text-xs font-bold text-purple-950 active:scale-95"
+                      >
+                        Confirmar envio
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Away message */}
+                {uberStatus === 'away' && (
+                  <div className="mt-4 flex items-start gap-2 rounded-2xl bg-purple-950/60 px-3 py-3 ring-1 ring-purple-700">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-purple-300" />
+                    <p className="text-[12px] leading-relaxed text-purple-300">
+                      Sem problemas! O pedido segue reservado (prazo de 24h). Volte aqui e confirme assim que estiver com o livro em mãos.
+                    </p>
+                  </div>
+                )}
+
+                {/* Confirmed state */}
+                {uberStatus === 'confirmed' && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-start gap-2 rounded-2xl bg-mint-400/10 px-3 py-3 ring-1 ring-mint-400/30">
+                      <span className="text-base leading-none">🏍️</span>
+                      <p className="text-[12px] leading-relaxed text-mint-200">
+                        Pagamento do comprador liberado. Aguardando motoboy Uber.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => alert('Abrir conversa com ' + UBER_EXAMPLE.recipientName)}
+                      className="flex w-full items-center justify-center gap-2 rounded-full bg-mint-400 py-3.5 text-sm font-bold text-purple-950 shadow-lg shadow-mint-400/20 transition active:scale-95"
+                    >
+                      <MessageCircle className="h-4 w-4" /> Conversar com o leitor
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
