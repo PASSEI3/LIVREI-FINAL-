@@ -15,6 +15,7 @@ import { BuyPointsModal } from '@/components/BuyPointsModal/BuyPointsModal';
 import { ShippingInstructions } from '@/screens/ShippingInstructions/ShippingInstructions';
 import { ShelfViewerScreen } from '@/screens/ShelfViewerScreen/ShelfViewerScreen';
 import { SignUpScreen } from '@/screens/SignUpScreen/SignUpScreen';
+import { WelcomeScreen } from '@/screens/WelcomeScreen/WelcomeScreen';
 import { SettingsScreen } from '@/screens/SettingsScreen/SettingsScreen';
 import { TermsScreen } from '@/screens/TermsScreen';
 
@@ -30,6 +31,8 @@ const tabs: { id: Tab; label: string; icon: typeof Home }[] = [
 
 function App() {
   const [signedUp, setSignedUp] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [showSignUp, setShowSignUp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [tab, setTab] = useState<Tab>('feed');
@@ -424,8 +427,20 @@ function App() {
         <TermsScreen onClose={() => setShowTerms(false)} />
       )}
 
-      {!signedUp && (
-        <SignUpScreen onComplete={(prefs) => { setPreferences(prefs); setSignedUp(true); }} onSkip={() => setSignedUp(true)} />
+      {!signedUp && showWelcome && (
+        <WelcomeScreen
+          onGoogleLogin={() => { setShowWelcome(false); setSignedUp(true); }}
+          onCreateAccount={() => { setShowWelcome(false); setShowSignUp(true); }}
+          onLogin={() => { setShowWelcome(false); setSignedUp(true); }}
+          onSkip={() => { setShowWelcome(false); setSignedUp(true); }}
+        />
+      )}
+
+      {!signedUp && showSignUp && !showWelcome && (
+        <SignUpScreen
+          onComplete={(prefs) => { setPreferences(prefs); setSignedUp(true); setShowSignUp(false); }}
+          onSkip={() => { setSignedUp(true); setShowSignUp(false); }}
+        />
       )}
 
       {toast && (
