@@ -17,8 +17,10 @@ import {
   Copy,
   Check,
   PackageCheck,
+  Send,
+  Coins,
 } from 'lucide-react';
-import type { MatchEntry, MeetupPoint } from '@/types';
+import type { MatchEntry, MeetupPoint, Book } from '@/types';
 import type { ShelfLiker } from '@/data';
 import { BookCover } from '@/components/BookCover/BookCover';
 import { AttentionBanner } from '@/components/AttentionBanner/AttentionBanner';
@@ -55,6 +57,14 @@ const sectionTabs: { id: Section; label: string; icon: typeof Eye }[] = [
 
 const NOW = new Date('2026-10-27T12:00:00');
 const EXPIRY_MS = 3 * 24 * 60 * 60 * 1000;
+
+const SEND_EXAMPLE: { book: Book; recipientName: string; recipientCity: string; recipientEmoji: string; postalCode: string } = {
+  book: { id: 'send-1', title: 'A Biblioteca da Meia-Noite', author: 'Matt Haig', coverClass: 'cover-1', coverEmoji: '🌙', condition: 'Seminovo', category: 'Ficção', notes: 'Pouco uso, sem rasuras.', isbn: '9788542221244' },
+  recipientName: 'Beatriz M.',
+  recipientCity: 'São Paulo - SP',
+  recipientEmoji: '🦊',
+  postalCode: '98472615',
+};
 
 function timeRemaining(likedAt: string): { label: string; hoursLeft: number; urgent: boolean } {
   const d = new Date(likedAt);
@@ -261,6 +271,94 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
       {/* === ONGOING SECTION === */}
       {section === 'ongoing' && (
         <div>
+          <div className="space-y-4">
+            {/* Para Enviar — sender view (coin redemption) */}
+            <div
+              className="overflow-hidden rounded-3xl bg-purple-900/60 ring-1 ring-amber-400/40 shadow-lg shadow-amber-400/5 transition-all duration-300 animate-fade-in"
+              style={{ animationDelay: '0ms' }}
+            >
+              {/* Header bar */}
+              <div className="flex items-center gap-2 border-b border-purple-800 px-4 py-2.5">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-400/15">
+                  <Send className="h-3.5 w-3.5 text-amber-400" />
+                </div>
+                <span className="text-sm font-semibold text-purple-50">Para Enviar</span>
+                <div className="ml-auto flex items-center gap-1.5">
+                  <span className="flex items-center gap-1 rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[10px] font-bold text-amber-300 ring-1 ring-amber-400/40">
+                    <Coins className="h-3 w-3" /> Resgate por moedas
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4">
+                {/* Requested book + recipient */}
+                <div className="flex items-center gap-3">
+                  <div className="text-center">
+                    <BookCover book={SEND_EXAMPLE.book} className="h-28 w-20" emojiSize="text-3xl" />
+                    <p className="mt-1.5 text-[10px] font-semibold text-amber-400">Enviar para</p>
+                  </div>
+                  <div className="flex flex-1 flex-col items-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-800">
+                      <Send className="h-5 w-5 text-purple-300" />
+                    </div>
+                  </div>
+                  <div className="flex flex-1 flex-col items-center gap-2">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-700 text-2xl">
+                      {SEND_EXAMPLE.recipientEmoji}
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[11px] font-bold text-purple-50">{SEND_EXAMPLE.recipientName}</p>
+                      <p className="flex items-center justify-center gap-1 text-[9px] text-purple-400">
+                        <MapPin className="h-2.5 w-2.5" /> {SEND_EXAMPLE.recipientCity}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Postal code block */}
+                <div className="mt-4 rounded-2xl bg-purple-950/60 p-3 ring-1 ring-purple-800">
+                  <div className="flex items-center gap-2">
+                    <Truck className="h-4 w-4 shrink-0 text-amber-400" />
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-purple-400">Código Digital de Postagem</p>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <p className="min-w-0 flex-1 truncate font-mono text-sm font-bold text-purple-50">{SEND_EXAMPLE.postalCode}</p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard?.writeText(SEND_EXAMPLE.postalCode).catch(() => {});
+                        setCopiedCode('send-1');
+                        setTimeout(() => setCopiedCode(null), 2000);
+                      }}
+                      className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold transition active:scale-95 ${
+                        copiedCode === 'send-1'
+                          ? 'bg-mint-400 text-purple-950'
+                          : 'bg-purple-800 text-purple-100 ring-1 ring-purple-700'
+                      }`}
+                    >
+                      {copiedCode === 'send-1' ? (
+                        <>
+                          <Check className="h-3.5 w-3.5" /> Copiado!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" /> Copiar Código
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {copiedCode === 'send-1' && (
+                    <p className="mt-1.5 text-[10px] font-medium text-mint-300">Código copiado!</p>
+                  )}
+                  <div className="mt-2.5 flex items-start gap-2 rounded-xl bg-amber-400/10 px-3 py-2 ring-1 ring-amber-400/20">
+                    <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
+                    <p className="text-[11px] leading-relaxed text-amber-200">
+                      Mostre este código na agência dos Correios em até 3 dias úteis (sem precisar imprimir). Suas moedas serão liberadas após a postagem.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           {ongoingMatches.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="mb-3 text-5xl">📭</div>
@@ -268,8 +366,8 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
               <p className="mt-1 text-xs text-purple-500">Dê "Gostei" nos livros do feed para começar!</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {ongoingMatches.map((m, i) => {
+            <>
+            {ongoingMatches.map((m, i) => {
                 const meetup = meetups[m.id];
                 const isNew = m.status === 'novo';
                 const isTrackingActive = Boolean(m.deliveryMethod === 'correios' && m.trackingCode);
@@ -434,8 +532,9 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
                   </div>
                 );
               })}
-            </div>
+            </>
           )}
+          </div>
         </div>
       )}
 
