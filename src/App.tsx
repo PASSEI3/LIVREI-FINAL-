@@ -8,6 +8,7 @@ import { ScanScreen } from '@/screens/ScanScreen';
 import { MatchScreen } from '@/screens/MatchScreen/MatchScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { PaymentScreen } from '@/screens/PaymentScreen';
+import { DeliveryTrackingScreen } from '@/screens/DeliveryTrackingScreen/DeliveryTrackingScreen';
 import { ChatScreen } from '@/screens/ChatScreen/ChatScreen';
 import { HandoffScreen } from '@/screens/HandoffScreen/HandoffScreen';
 import { BuyPointsModal } from '@/components/BuyPointsModal/BuyPointsModal';
@@ -42,6 +43,7 @@ function App() {
   const [wallet, setWallet] = useState<WalletEntry[]>(INITIAL_WALLET);
   const [payMatch, setPayMatch] = useState<MatchEntry | null>(null);
   const [chatMatch, setChatMatch] = useState<MatchEntry | null>(null);
+  const [deliveryTracking, setDeliveryTracking] = useState<{ match: MatchEntry; pin: string } | null>(null);
   const [handoff, setHandoff] = useState<{ match: MatchEntry; role: HandoffRole } | null>(null);
   const [showBuyPoints, setShowBuyPoints] = useState(false);
   const [shipping, setShipping] = useState<{ match: MatchEntry; method: DeliveryMethod; meetup?: MeetupPoint } | null>(null);
@@ -183,12 +185,18 @@ function App() {
       if (meetup) setMeetups((prev) => ({ ...prev, [id]: meetup }));
       setMatches((m) => m.map((x) => (x.id === id ? { ...x, feePaidByMe: true } : x)));
       setPayMatch(null);
-      if (method === 'courier') {
-        setMatches((m) => m.map((x) => (x.id === id ? { ...x, status: 'conversando' } : x)));
-        setChatMatch({ ...payMatch, status: 'conversando' });
-      } else {
+      if (method !== 'courier') {
         setShipping({ match: { ...payMatch, status: 'conversando' }, method, meetup });
       }
+    }
+  };
+
+  const handleTrack = (pin: string) => {
+    if (payMatch) {
+      const id = payMatch.id;
+      setMatches((m) => m.map((x) => (x.id === id ? { ...x, status: 'conversando' } : x)));
+      setDeliveryTracking({ match: { ...payMatch, status: 'conversando' }, pin });
+      setPayMatch(null);
     }
   };
 
@@ -329,7 +337,19 @@ function App() {
       </nav>
 
       {payMatch && (
-        <PaymentScreen match={payMatch} onClose={() => setPayMatch(null)} onPaid={handlePaid} />
+        <PaymentScreen match={payMatch} onClose={() => setPayMatch(null)} onPaid={handlePaid} onTrack={handleTrack} />
+      )}
+
+      {deliveryTracking && (
+        <DeliveryTrackingScreen
+          match={deliveryTracking.match}
+          pin={deliveryTracking.pin}
+          onChat={() => {
+            setChatMatch(deliveryTracking.match);
+            setDeliveryTracking(null);
+          }}
+          onClose={() => setDeliveryTracking(null)}
+        />
       )}
 
       {chatMatch && (
