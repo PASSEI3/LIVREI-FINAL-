@@ -61,9 +61,10 @@ const sectionTabs: { id: Section; label: string; icon: typeof Eye }[] = [
 const NOW = new Date('2026-10-27T12:00:00');
 const EXPIRY_MS = 3 * 24 * 60 * 60 * 1000;
 
-const SEND_EXAMPLE: { book: Book; recipientName: string; recipientCity: string; recipientAddress: string; recipientEmoji: string; postalCode: string } = {
+const SEND_EXAMPLE: { book: Book; recipientName: string; recipientFullName: string; recipientCity: string; recipientAddress: string; recipientEmoji: string; postalCode: string } = {
   book: { id: 'send-1', title: 'A Biblioteca da Meia-Noite', author: 'Matt Haig', coverClass: 'cover-1', coverEmoji: '🌙', condition: 'Seminovo', category: 'Ficção', notes: 'Pouco uso, sem rasuras.', isbn: '9788542221244' },
   recipientName: 'Beatriz M.',
+  recipientFullName: 'Beatriz Mendes',
   recipientCity: 'São Paulo - SP',
   recipientAddress: 'Rua Exemplo, 123 - Centro, São Paulo - SP',
   recipientEmoji: '🦊',
@@ -333,7 +334,7 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
                   <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-amber-400" />
                   <div className="min-w-0">
                     <p className="text-[9px] font-semibold uppercase tracking-wide text-purple-400">Endereço para escrever no pacote</p>
-                    <p className="mt-0.5 text-[11px] leading-snug text-purple-200">{SEND_EXAMPLE.recipientAddress}</p>
+                    <p className="mt-0.5 text-[11px] leading-snug text-purple-200"><span className="font-bold text-purple-100">{SEND_EXAMPLE.recipientFullName}</span> — {SEND_EXAMPLE.recipientAddress}</p>
                   </div>
                 </div>
 
@@ -484,13 +485,21 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
                   </div>
                 )}
 
-                {/* Away message */}
+                {/* Away message with ready button */}
                 {uberStatus === 'away' && (
-                  <div className="mt-4 flex items-start gap-2 rounded-2xl bg-purple-950/60 px-3 py-3 ring-1 ring-purple-700">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-purple-300" />
-                    <p className="text-[12px] leading-relaxed text-purple-300">
-                      Sem problemas! O pedido segue reservado (prazo de 24h). Volte aqui e confirme assim que estiver com o livro em mãos.
-                    </p>
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-start gap-2 rounded-2xl bg-purple-950/60 px-3 py-3 ring-1 ring-purple-700">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-purple-300" />
+                      <p className="text-[12px] leading-relaxed text-purple-300">
+                        Sem problemas! O pedido segue reservado (prazo de 24h). Volte aqui e confirme assim que estiver com o livro em mãos.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setUberConfirming(true)}
+                      className="flex w-full items-center justify-center gap-2 rounded-full bg-mint-400 py-3.5 text-sm font-bold text-purple-950 shadow-lg shadow-mint-400/20 transition active:scale-95"
+                    >
+                      <Check className="h-4 w-4" /> Já cheguei, estou pronto agora
+                    </button>
                   </div>
                 )}
 
