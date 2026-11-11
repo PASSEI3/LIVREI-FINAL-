@@ -56,6 +56,8 @@ export interface MatchEntry {
   status: 'novo' | 'conversando' | 'finalizado';
   feePaidByMe?: boolean;
   feePaidByPartner?: boolean;
+  deliveryMethod?: DeliveryMethod;
+  trackingCode?: string;
   createdAt: string;
 }
 

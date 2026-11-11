@@ -208,10 +208,27 @@ function App() {
       setChatMatch(shipping.match);
       setToast('Instruções concluídas! Combine os detalhes no chat 🤝');
     } else {
-      setMatches((m) => m.map((x) => (x.id === id ? { ...x, status: 'finalizado' } : x)));
+      const trackingCode = `BR${Math.floor(100000000 + Math.random() * 899999999)}BR`;
+      setMatches((m) => m.map((x) => (x.id === id ? { ...x, status: 'conversando', deliveryMethod: 'correios', trackingCode } : x)));
       setToast('Etiqueta liberada! Boa postagem 📦');
     }
     setShipping(null);
+  };
+
+  const handleConfirmReceipt = (match: MatchEntry) => {
+    const id = match.id;
+    setMatches((m) => m.map((x) => (x.id === id ? { ...x, status: 'finalizado' } : x)));
+    setHistory((h) => [
+      {
+        id: `t-${Date.now()}`,
+        bookTitle: match.bookFrom.title,
+        partnerName: match.partnerName,
+        date: new Date().toLocaleDateString('pt-BR'),
+        status: 'recebido',
+      },
+      ...h,
+    ]);
+    setToast('Recebimento confirmado! Troca finalizada 🎉');
   };
 
   const handleHandoffConfirmed = () => {
@@ -284,6 +301,7 @@ function App() {
             onChat={setChatMatch}
             onSimulatePartnerPayment={(m) => setMatches((prev) => prev.map((x) => (x.id === m.id ? { ...x, feePaidByPartner: true } : x)))}
             onOpenLiker={setViewedLiker}
+            onConfirmReceipt={handleConfirmReceipt}
           />
         </div>
         <div className={tab === 'profile' ? 'h-full' : 'hidden'}>

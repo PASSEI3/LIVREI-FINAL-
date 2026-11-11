@@ -13,6 +13,10 @@ import {
   History,
   Loader2,
   Timer,
+  Truck,
+  Copy,
+  Check,
+  PackageCheck,
 } from 'lucide-react';
 import type { MatchEntry, MeetupPoint } from '@/types';
 import type { ShelfLiker } from '@/data';
@@ -28,6 +32,7 @@ interface Props {
   onChat: (match: MatchEntry) => void;
   onOpenLiker: (liker: ShelfLiker) => void;
   onSimulatePartnerPayment: (match: MatchEntry) => void;
+  onConfirmReceipt: (match: MatchEntry) => void;
 }
 
 type Section = 'likers' | 'ongoing' | 'history';
@@ -68,9 +73,10 @@ function timeAgo(createdAt: string): string {
   return `${diff} dias atrás`;
 }
 
-export function MatchScreen({ matches, meetups, likers, initialSection = 'likers', onPay, onChat, onOpenLiker, onSimulatePartnerPayment }: Props) {
+export function MatchScreen({ matches, meetups, likers, initialSection = 'likers', onPay, onChat, onOpenLiker, onSimulatePartnerPayment, onConfirmReceipt }: Props) {
   const [section, setSection] = useState<Section>(initialSection);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => {
     setSection(initialSection);
@@ -355,6 +361,50 @@ export function MatchScreen({ matches, meetups, likers, initialSection = 'likers
                           <p className="truncate text-xs text-mint-200">
                             Encontro: <span className="font-semibold">{meetup.name}</span>
                           </p>
+                        </div>
+                      )}
+
+                      {/* Tracking code for Correios shipments */}
+                      {m.deliveryMethod === 'correios' && m.trackingCode && (
+                        <div className="mt-3 rounded-2xl bg-purple-950/60 p-3 ring-1 ring-purple-800">
+                          <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 shrink-0 text-mint-400" />
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-purple-400">Código de rastreio</p>
+                          </div>
+                          <div className="mt-2 flex items-center gap-2">
+                            <p className="min-w-0 flex-1 truncate font-mono text-sm font-bold text-purple-50">{m.trackingCode}</p>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard?.writeText(m.trackingCode ?? '').catch(() => {});
+                                setCopiedCode(m.id);
+                                setTimeout(() => setCopiedCode(null), 2000);
+                              }}
+                              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold transition active:scale-95 ${
+                                copiedCode === m.id
+                                  ? 'bg-mint-400 text-purple-950'
+                                  : 'bg-purple-800 text-purple-100 ring-1 ring-purple-700'
+                              }`}
+                            >
+                              {copiedCode === m.id ? (
+                                <>
+                                  <Check className="h-3.5 w-3.5" /> Copiado!
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3.5 w-3.5" /> Copiar Código
+                                </>
+                              )}
+                            </button>
+                          </div>
+                          {copiedCode === m.id && (
+                            <p className="mt-1.5 text-[10px] font-medium text-mint-300">Código copiado!</p>
+                          )}
+                          <button
+                            onClick={() => onConfirmReceipt(m)}
+                            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-full bg-mint-400 py-2.5 text-xs font-bold text-purple-950 active:scale-95"
+                          >
+                            <PackageCheck className="h-4 w-4" /> Confirmar Recebimento
+                          </button>
                         </div>
                       )}
 
